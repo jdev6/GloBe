@@ -1,4 +1,11 @@
-local bit32 = require "lib.bit-numberlua".bit32
+local band,bor,lshift,rshift
+do
+    local bit = require "bit"
+    band = bit.band
+    bor = bit.bor
+    lshift = bit.lshift
+    rshift = bit.rshift
+end
 
 local ops = setmetatable({
     ------
@@ -8,41 +15,42 @@ local ops = setmetatable({
         --LD B,n
         self.reg.b = mem[self.reg.pc]
         self:wait(8)
+        return band(self.reg.pc +1, 0xFFFF)
     end,
 
     [0x0E] = function(self)
         --LD C,n
         self.reg.c = mem[self.reg.pc]
         self:wait(8)
-        return bit32.band(self.reg.pc +1, 0xFFFF)
+        return band(self.reg.pc +1, 0xFFFF)
     end,
 
     [0x16] = function(self)
         --LD D,n
         self.reg.d = mem[self.reg.pc]
         self:wait(8)
-        return bit32.band(self.reg.pc +1, 0xFFFF)
+        return band(self.reg.pc +1, 0xFFFF)
     end,
 
     [0x1E] = function(self)
         --LD E,n
         self.reg.e = mem[self.reg.pc]
         self:wait(8)
-        return bit32.band(self.reg.pc +1, 0xFFFF)
+        return band(self.reg.pc +1, 0xFFFF)
     end,
 
     [0x26] = function(self)
         --LD H,n
         self.reg.h = mem[self.reg.pc]
         self:wait(8)
-        return bit32.band(self.reg.pc +1, 0xFFFF)
+        return band(self.reg.pc +1, 0xFFFF)
     end,
 
     [0x2E] = function(self)
         --LD L,n
         self.reg.l = mem[self.reg.pc]
         self:wait(8)
-        return bit32.band(self.reg.pc +1, 0xFFFF)
+        return band(self.reg.pc +1, 0xFFFF)
     end,
 
     [0x7F] = function(self)
@@ -340,7 +348,7 @@ local ops = setmetatable({
 
     [0x70] = function(self)
         --LD (HL),B
-        mem[self.reg.hl] = self.reg.n
+        mem[self.reg.hl] = self.reg.b
         self:wait(8)
     end,
         
@@ -372,12 +380,216 @@ local ops = setmetatable({
         --LD (HL),L
         mem[self.reg.hl] = self.reg.l
         self:wait(8)
-    end
+    end,
+    
+    [0x36] = function(self)
+        --LD (HL),n
+        mem[self.reg.hl] = mem[self.reg.pc]
+        self:wait(12)
+        return band(self.reg.pc +1, 0xFFFF)
+    end,
+    
+    [0x7F] = function(self)
+        --LD A,A
+        self:wait(4)
+    end,
+    
+    [0x78] = function(self)
+        --LD A,B
+        self.reg.a = self.reg.b
+        self:wait(4)
+    end,
+    
+    [0x79] = function(self)
+        --LD A,C
+        self.reg.a = self.reg.c
+        self:wait(4)
+    end,
+    
+    [0x7A] = function(self)
+        --LD A,D
+        self.reg.a = self.reg.d
+        self:wait(4)
+    end,
+    
+    [0x7B] = function(self)
+        --LD A,E
+        self.reg.a = self.reg.e
+        self:wait(4)
+    end,
+    
+    [0x7C] = function(self)
+        --LD A,H
+        self.reg.a = self.reg.h
+        self:wait(4)
+    end,
+    
+    [0x7D] = function(self)
+        --LD A,L
+        self.reg.a = self.reg.l
+        self:wait(4)
+    end,
+    
+    [0x0A] = function(self)
+        --LD A,(BC)
+        self.reg.a = mem[self.reg.bc]
+        self:wait(8)
+    end,
+    
+    [0x1A] = function(self)
+        --LD A,(DE)
+        self.reg.a = mem[self.reg.de]
+        self:wait(8)
+    end,
+    
+    [0x7E] = function(self)
+        --LD A,(HL)
+        self.reg.a = mem[self.reg.hl]
+        self:wait(8)
+    end,
+    
+    [0xFA] = function(self)
+        --LD A,(nn)
+        self.reg.a = mem[bor(
+            lshift(
+                mem[band(
+                    self.reg.pc + 1,
+                    0xFFFF)]
+                ,8),
+            mem[self.reg.pc])] --> mem[mem[self.reg.pc+1 & 0xFFFF] << 8] | mem[self.reg.pc]
+
+        self:wait(16)
+        return band(self.reg.pc+2, 0xFFFF)
+    end,
+    
+    [0x3E] = function(self)
+        --LD A,n
+        self.reg.a = mem[self.reg.pc]
+        self:wait(4)
+        return band(self.reg.pc+1, 0xFFFF)
+    end,
+    
+    [0x47] = function(self)
+        --LD B,A
+        self.reg.a = self.reg.b
+        self:wait(4)
+    end,
+    
+    [0x4F] = function(self)
+        --LD C,A
+        self.reg.c = self.reg.a
+        self:wait(4)
+    end,
+    
+    [0x57] = function(self)
+        --LD D,A
+        self.reg.d = self.reg.a
+        self:wait(4)
+    end,
+    
+    [0x5F] = function(self)
+        --LD E,A
+        self.reg.e = self.reg.a
+        self:wait(4)
+    end,
+    
+    [0x67] = function(self)
+        --LD H,A
+        self.reg.h = self.reg.a
+        self:wait(4)
+    end,
+    
+    [0x6F] = function(self)
+        --LD L,A
+        self.reg.l = self.reg.a
+    end,
+    
+    [0x02] = function(self)
+        --LD (BC),A
+        mem[self.reg.bc] = self.reg.a
+        self:wait(8)
+    end,
+    
+    [0x12] = function(self)
+        --LD (DE),A
+        mem[self.reg.de] = self.reg.a
+        self:wait(8)
+    end,
+    
+    [0x77] = function(self)
+        --LD (HL),A
+        mem[self.reg.hl] = self.reg.a
+        self:wait(8)
+    end,
+    
+    [0xEA] = function(self)
+        --LD (nn),A 
+        mem[lshift(bor(mem[self.reg.pc], mem[self.reg.pc+1]), 8)] = self.reg.a
+        
+        self:wait(16)
+        return band(self.reg.pc+2, 0xFFFF)
+    end,
+    
+    [0xF2] = function(self)
+        --LD A,(0xFF00 + C)
+        self.reg.a = mem[0xFF00+self.reg.c]
+        self:wait(8)
+    end,
+    
+    [0xE2] = function(self)
+        --LD (0xFF00 + C),A
+        mem[0xFF00+self.reg.c] = self.reg.a
+        self:wait(8)
+    end,
+    
+    [0x3A] = function(self)
+        --LDD A,(HL) or LD A,(HL) - DEC HL
+        self.reg.a = mem[self.reg.hl]
+        self.reg.hl = band(self.reg.hl-1, 0xFFFF)
+        self:wait(8)
+
+    end,
+
+    [0x32] = function(self)
+        --LDD (HL),A or LD (HL),A - DEC HL
+        mem[hl] = self.reg.a
+        self.reg.hl = band(self.reg.hl-1, 0xFFFF)
+        self:wait(8)
+    end,
+
+    [0x2A] = function (self)
+        --LDI A,(HL) or LD A,(HL) - INC HL
+        self.reg.a = mem[self.reg.hl]
+        self.reg.hl = band(self.reg.hl+1, 0xFFFF)
+        self:wait(8)
+    end,
+
+    [0x22] = function (self)
+        --LDI (HL),A or LD (HL),A - INC HL
+        mem[self.reg.hl] = self.reg.a
+        self.reg.hl = band(self.reg.hl+1, 0xFFFF)
+        self:wait(8)
+    end,
+
+    [0xE0] = function (self)
+        --LD (0xFF00+n),A 
+        mem[0xFF00+mem[self.reg.pc]] = self.reg.a
+        self:wait(12)
+        return band(self.reg.pc+1, 0xFFFF)
+    end,
+
+    [0xF0] = function (self)
+        --LD A,(0xFF00+n)
+        self.reg.a = mem[0xFF00+mem[self.reg.pc]]
+        self:wait(12)
+        return band(self.reg.pc+1, 0xFFFF)
+    end 
+
 },
-{__index=function() return function(self) printf("Unrecognized opcode: %2X", self.opcode) end end})
+{__index=function() return function(self) printf("Unrecognized opcode: 0x%0X", self.opcode) end end})
 
 return function(self)
-    local pc = ops[self.opcode](self) or self.reg.pc + 2
+    local pc = ops[self.opcode](self) or self.reg.pc + 1
     return {
         pc = pc
     }

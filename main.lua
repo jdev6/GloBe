@@ -10,9 +10,7 @@ cpu  = require("src.cpu").new()
 mem  = require("src.mem")
 suit = require("lib.suit")
 
-local show_help = false
-local help_message =
-[[esc to quit xd]]
+local show_debug = true
 
 function love.load()
     local options = arg_parse(arg)
@@ -32,28 +30,25 @@ end
 
 function love.update()
     cpu:cycle()
-    if suit.Button("Help", 2,2,40,20).hit then
-        show_help = not show_help
-    end
-
-    if show_help then
-        suit.Label(help_message, 0,20, 100,80)
+    if suit.Button(string.format("Debug: %s", show_debug), 2,2,84,20).hit then
+        show_debug = not show_debug
     end
 end
 
 function love.draw()
     suit.draw()
 
-    lg.print(string.format(
-[[a: %0X 
-b: %0X
-c: %0X
-d: %0X
-e: %0X
-h: %0X
-l: %0X
-hl: %0X
-pc: %i]],cpu.reg.a,cpu.reg.b,cpu.reg.c,cpu.reg.d,cpu.reg.e,cpu.reg.h,cpu.reg.l,cpu.reg.hl,cpu.reg.pc),0,0)
+    if show_debug then
+        local y = 30
+        for r,v in pairs(cpu.reg) do
+            if r ~= 'f' then
+                lg.print(string.format('%s: %2X',r,v), 5,y)
+            else
+                lg.print(string.format('f: {z: %s, n: %s, h: %s, c: %s}',v.z,v.n,v.h,v.c), 5,y)
+            end
+            y=y+15
+        end
+    end
 end
 
 function love.keypressed(k)
@@ -95,6 +90,6 @@ function love.run()
             love.graphics.present()
         end
  
-        if love.timer then love.timer.sleep(1/FPS) end
+        if love.timer and not love.keyboard.isDown "tab" then love.timer.sleep(1/FPS) end
     end
 end

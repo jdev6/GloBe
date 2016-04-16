@@ -1,5 +1,5 @@
 local cpu   = require "lib.classic"()
-local bit32 = require "lib.bit-numberlua".bit32
+local bit = require "bit"
 
 local nintendo_banner = { --Scrolling nintendo text
     0xCE, 0xED, 0x66, 0x66, 0xCC, 0x0D, 0x00, 0x0B, 0x03, 0x73, 0x00, 0x83, 0x00, 0x0C, 0x00, 0x0D,
@@ -10,8 +10,16 @@ local nintendo_banner = { --Scrolling nintendo text
 local function merge_binary_numbers(a,b)
     local bits = select(2,math.frexp(b))
     local result = a
-    result = bit32.bor(bit32.lshift(result, bits), b)
+    result = bit.bor(bit.lshift(result, bits), b)
     return result
+end
+
+local function get_low_nibble(a)
+    return bit.band(a, 0x0F)
+end
+
+local function get_high_nibble(a)
+    return bit.band(bit.lshift(a, 4), 0x0F)
 end
 
 function cpu:new()
@@ -34,10 +42,14 @@ function cpu:new()
             pc = 0x100, --program counter
         },
         { --Metatable for special registers (combined registers)
-            __index = function(self,k)
-                if k == "hl" then
-                    return merge_binary_numbers(self.h,self.l)
-                end
+            __index = function(reg,k)
+                local b1, b2 = k:sub(1,1), k:sub(2,2)
+                return merge_binary_numbers(reg[b1], reg[b2])
+            end,
+            __newindex = function(reg,k,val)
+               local b1, b2 = k:sub(1,1), k:sub(2,2)
+               rawset(reg, b1, get_low_nibble(val))
+               rawset(reg, b2, get_high_nibble(val))
             end
         }
         )
@@ -55,6 +67,7 @@ function cpu:cycle(dt)
     end
 end
 
+--In another file for convenience
 cpu.executeOP = require "src.opcodes"
 
 return cpu
