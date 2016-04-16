@@ -25,7 +25,12 @@ function cpu:new()
             l = 0,
             e = 0,
             c = 0,
-            f = 0, --flag register
+            f = {
+                z = false, --zero flag
+                n = false, --subtract flag
+                h = false, --half carry flag
+                c = false  --carry flag
+            },
             pc = 0x100, --program counter
         },
         { --Metatable for special registers (combined registers)
