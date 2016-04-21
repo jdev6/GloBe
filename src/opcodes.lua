@@ -552,7 +552,7 @@ local ops = setmetatable({
 
     [0x32] = function(self)
         --LDD (HL),A or LD (HL),A - DEC HL
-        mem[hl] = self.reg.a
+        mem[self.reg.hl] = self.reg.a
         self.reg.hl = band(self.reg.hl-1, 0xFFFF)
         self:wait(8)
     end,
@@ -583,13 +583,78 @@ local ops = setmetatable({
         self.reg.a = mem[0xFF00+mem[self.reg.pc]]
         self:wait(12)
         return band(self.reg.pc+1, 0xFFFF)
-    end 
+    end,
+    
+    [0x01] = function(self)
+        --LD BC,nn
+        self.reg.bc = lshift(bor(mem[self.reg.pc], mem[self.reg.pc+1]), 8) --mem[self.reg.pc] | mem[self.reg.pc] << 8
+        self:wait(12)
+        return band(self.reg.pc+2, 0xFFFF)
+    end,
+    
+    [0x11] = function(self)
+        --LD DE,nn
+        self.reg.de = lshift(bor(mem[self.reg.pc], mem[self.reg.pc+1]), 8) --mem[self.reg.pc] | mem[self.reg.pc] << 8
+        self:wait(12)
+        return band(self.reg.pc+2, 0xFFFF)
+    end,
+    
+    [0x21] = function(self)
+        --LD HL,nn
+        self.reg.hl = lshift(bor(mem[self.reg.pc], mem[self.reg.pc+1]), 8) --mem[self.reg.pc] | mem[self.reg.pc] << 8
+        self:wait(12)
+        return band(self.reg.pc+2, 0xFFFF)
+    end,
+    
+    [0x31] = function(self)
+        --LD SP,nn
+        self.reg.sp = lshift(bor(mem[self.reg.pc], mem[self.reg.pc+1]), 8) --mem[self.reg.pc] | mem[self.reg.pc] << 8
+        self:wait(12)
+        return band(self.reg.pc+2, 0xFFFF)        
+    end,
+    
+    [0xF9] = function(self)
+        --LD SP,HL
+        self.reg.sp = self.reg.hl
+        self:wait(8)
+    end,
+    
+    [0xF8] = function(self)
+        --LD HL,SP+n
+        local n = mem[self.reg.pc]
+        
+        --Reset flag register
+        self.reg.f.z = false
+        self.reg.f.h = false
+        self.reg.f.n = false
+        self.reg.f.c = false
+        
+        if n >= 0 then
+            if (band(n, 0xF) + band(self.reg.sp, 0xF)) > 0xF then
+                self.reg.f.h = true
+            end
+
+            if self.reg.sp + n > 0xFFFF then
+                self.reg.f.c = true
+            end
+        else
+            if (band(n, 0xF) + band(self.reg.sp, 0xF)) < 0 then
+                self.reg.f.h = true
+            end
+            
+            if self.reg.sp + n < 0 then
+                self.reg.f.c = true
+            end
+        end
+
+        return band(self.reg.pc+1, 0xFFFF)
+    end,
 
 },
-{__index=function() return function(self) printf("Unrecognized opcode: 0x%0X", self.opcode) end end})
+{__index=function() return function(self) printf("Unrecognized opcode: 0x%2X", self.opcode) end end})
 
 return function(self)
-    local pc = ops[self.opcode](self) or self.reg.pc + 1
+    local pc = ops[self.opcode](self) or self.reg.pc
     return {
         pc = pc
     }

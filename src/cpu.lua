@@ -39,6 +39,7 @@ function cpu:new()
                 h = false, --half carry flag
                 c = false  --carry flag
             },
+            sp = 0xFFFE, --stack pointer
             pc = 0x100, --program counter
         },
         { --Metatable for special registers (combined registers)
