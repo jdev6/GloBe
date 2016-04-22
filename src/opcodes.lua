@@ -187,7 +187,7 @@ local ops = setmetatable({
         self.reg.d = self.reg.b
         self:wait(4)
     end,
-    
+
     [0x51] = function(self)
         --LD D,C
         self.reg.d = self.reg.c
@@ -222,7 +222,7 @@ local ops = setmetatable({
         self.reg.d = mem[self.reg.hl]
         self:wait(8)
     end,
-    
+
     [0x58] = function(self)
         --LD E,B
         self.reg.e = self.reg.b
@@ -351,7 +351,7 @@ local ops = setmetatable({
         mem[self.reg.hl] = self.reg.b
         self:wait(8)
     end,
-        
+
     [0x71] = function(self)
         --LD (HL),C
         mem[self.reg.hl] = self.reg.c
@@ -381,73 +381,73 @@ local ops = setmetatable({
         mem[self.reg.hl] = self.reg.l
         self:wait(8)
     end,
-    
+
     [0x36] = function(self)
         --LD (HL),n
         mem[self.reg.hl] = mem[self.reg.pc]
         self:wait(12)
         return band(self.reg.pc +1, 0xFFFF)
     end,
-    
+
     [0x7F] = function(self)
         --LD A,A
         self:wait(4)
     end,
-    
+
     [0x78] = function(self)
         --LD A,B
         self.reg.a = self.reg.b
         self:wait(4)
     end,
-    
+
     [0x79] = function(self)
         --LD A,C
         self.reg.a = self.reg.c
         self:wait(4)
     end,
-    
+
     [0x7A] = function(self)
         --LD A,D
         self.reg.a = self.reg.d
         self:wait(4)
     end,
-    
+
     [0x7B] = function(self)
         --LD A,E
         self.reg.a = self.reg.e
         self:wait(4)
     end,
-    
+
     [0x7C] = function(self)
         --LD A,H
         self.reg.a = self.reg.h
         self:wait(4)
     end,
-    
+
     [0x7D] = function(self)
         --LD A,L
         self.reg.a = self.reg.l
         self:wait(4)
     end,
-    
+
     [0x0A] = function(self)
         --LD A,(BC)
         self.reg.a = mem[self.reg.bc]
         self:wait(8)
     end,
-    
+
     [0x1A] = function(self)
         --LD A,(DE)
         self.reg.a = mem[self.reg.de]
         self:wait(8)
     end,
-    
+
     [0x7E] = function(self)
         --LD A,(HL)
         self.reg.a = mem[self.reg.hl]
         self:wait(8)
     end,
-    
+
     [0xFA] = function(self)
         --LD A,(nn)
         self.reg.a = mem[bor(
@@ -461,87 +461,87 @@ local ops = setmetatable({
         self:wait(16)
         return band(self.reg.pc+2, 0xFFFF)
     end,
-    
+
     [0x3E] = function(self)
         --LD A,n
         self.reg.a = mem[self.reg.pc]
         self:wait(4)
         return band(self.reg.pc+1, 0xFFFF)
     end,
-    
+
     [0x47] = function(self)
         --LD B,A
         self.reg.a = self.reg.b
         self:wait(4)
     end,
-    
+
     [0x4F] = function(self)
         --LD C,A
         self.reg.c = self.reg.a
         self:wait(4)
     end,
-    
+
     [0x57] = function(self)
         --LD D,A
         self.reg.d = self.reg.a
         self:wait(4)
     end,
-    
+
     [0x5F] = function(self)
         --LD E,A
         self.reg.e = self.reg.a
         self:wait(4)
     end,
-    
+
     [0x67] = function(self)
         --LD H,A
         self.reg.h = self.reg.a
         self:wait(4)
     end,
-    
+
     [0x6F] = function(self)
         --LD L,A
         self.reg.l = self.reg.a
     end,
-    
+
     [0x02] = function(self)
         --LD (BC),A
         mem[self.reg.bc] = self.reg.a
         self:wait(8)
     end,
-    
+
     [0x12] = function(self)
         --LD (DE),A
         mem[self.reg.de] = self.reg.a
         self:wait(8)
     end,
-    
+
     [0x77] = function(self)
         --LD (HL),A
         mem[self.reg.hl] = self.reg.a
         self:wait(8)
     end,
-    
+
     [0xEA] = function(self)
-        --LD (nn),A 
+        --LD (nn),A
         mem[lshift(bor(mem[self.reg.pc], mem[self.reg.pc+1]), 8)] = self.reg.a
-        
+
         self:wait(16)
         return band(self.reg.pc+2, 0xFFFF)
     end,
-    
+
     [0xF2] = function(self)
         --LD A,(0xFF00 + C)
         self.reg.a = mem[0xFF00+self.reg.c]
         self:wait(8)
     end,
-    
+
     [0xE2] = function(self)
         --LD (0xFF00 + C),A
         mem[0xFF00+self.reg.c] = self.reg.a
         self:wait(8)
     end,
-    
+
     [0x3A] = function(self)
         --LDD A,(HL) or LD A,(HL) - DEC HL
         self.reg.a = mem[self.reg.hl]
@@ -572,7 +572,7 @@ local ops = setmetatable({
     end,
 
     [0xE0] = function (self)
-        --LD (0xFF00+n),A 
+        --LD (0xFF00+n),A
         mem[0xFF00+mem[self.reg.pc]] = self.reg.a
         self:wait(12)
         return band(self.reg.pc+1, 0xFFFF)
@@ -584,51 +584,51 @@ local ops = setmetatable({
         self:wait(12)
         return band(self.reg.pc+1, 0xFFFF)
     end,
-    
+
     [0x01] = function(self)
         --LD BC,nn
         self.reg.bc = lshift(bor(mem[self.reg.pc], mem[self.reg.pc+1]), 8) --mem[self.reg.pc] | mem[self.reg.pc] << 8
         self:wait(12)
         return band(self.reg.pc+2, 0xFFFF)
     end,
-    
+
     [0x11] = function(self)
         --LD DE,nn
         self.reg.de = lshift(bor(mem[self.reg.pc], mem[self.reg.pc+1]), 8) --mem[self.reg.pc] | mem[self.reg.pc] << 8
         self:wait(12)
         return band(self.reg.pc+2, 0xFFFF)
     end,
-    
+
     [0x21] = function(self)
         --LD HL,nn
         self.reg.hl = lshift(bor(mem[self.reg.pc], mem[self.reg.pc+1]), 8) --mem[self.reg.pc] | mem[self.reg.pc] << 8
         self:wait(12)
         return band(self.reg.pc+2, 0xFFFF)
     end,
-    
+
     [0x31] = function(self)
         --LD SP,nn
         self.reg.sp = lshift(bor(mem[self.reg.pc], mem[self.reg.pc+1]), 8) --mem[self.reg.pc] | mem[self.reg.pc] << 8
         self:wait(12)
-        return band(self.reg.pc+2, 0xFFFF)        
+        return band(self.reg.pc+2, 0xFFFF)
     end,
-    
+
     [0xF9] = function(self)
         --LD SP,HL
         self.reg.sp = self.reg.hl
         self:wait(8)
     end,
-    
+
     [0xF8] = function(self)
         --LD HL,SP+n
         local n = mem[self.reg.pc]
-        
+
         --Reset flag register
         self.reg.f.z = false
         self.reg.f.h = false
         self.reg.f.n = false
         self.reg.f.c = false
-        
+
         if n >= 0 then
             if (band(n, 0xF) + band(self.reg.sp, 0xF)) > 0xF then
                 self.reg.f.h = true
@@ -641,7 +641,7 @@ local ops = setmetatable({
             if (band(n, 0xF) + band(self.reg.sp, 0xF)) < 0 then
                 self.reg.f.h = true
             end
-            
+
             if self.reg.sp + n < 0 then
                 self.reg.f.c = true
             end
@@ -650,11 +650,70 @@ local ops = setmetatable({
         return band(self.reg.pc+1, 0xFFFF)
     end,
 
+    [0x08] = function(self)
+        --LD (nn),SP
+        mem[lshift(bor(mem[self.reg.pc], mem[self.reg.pc+1]), 8)] = self.reg.pc
+        self:wait(20)
+        return band(self.reg.pc+2, 0xFFFF)
+    end,
+
+    --------
+    --PUSH--
+    --------
+    [0xF5] = function(self)
+        --PUSH AF
+        mem[self.reg.sp] = self.reg.a
+        --illuminati confirmed
+        self.reg.sp = self.reg.sp-1
+        mem[self.reg.sp] = self.reg.f
+        self.reg.sp = self.reg.sp-1
+        self:wait(16)
+    end,
+
+    [0xC5] = function(self)
+        --PUSH BC
+        mem[self.reg.sp] = self.reg.b
+        self.reg.sp = self.reg.sp-1
+        mem[self.reg.sp] = self.reg.c
+        self.reg.sp = self.reg.sp-1
+        self:wait(16)
+    end,
+
+    [0xD5] = function(self)
+        --PUSH DE
+        mem[self.reg.sp] = self.reg.d
+        self.reg.sp = self.reg.sp-1
+        mem[self.reg.sp] = self.reg.e
+        self.reg.sp = self.reg.sp-1
+        self:wait(16)
+    end,
+
+    [0xE5] = function(self)
+        --PUSH HL
+        mem[self.reg.sp] = self.reg.h
+        self.reg.sp = self.reg.sp-1
+        mem[self.reg.sp] = self.reg.l
+        self.reg.sp = self.reg.sp-1
+        self:wait(16)
+    end,
+
+    -------
+    --POP--
+    -------
+    [0xF1] = function(self)
+        --POP AF
+        self.reg.sp = self.reg.sp+1
+        local tmp_lo = mem[self.reg.sp]
+        self.reg.sp = self.reg.sp-1
+        local tmp_hi = mem[self.reg.sp]
+        self.reg.af = merge_binary_numbers(tmp_hi, tmp_lo)
+        self:wait(12)
+    end
 },
 {__index=function() return function(self) printf("Unrecognized opcode: 0x%2X", self.opcode) end end})
 
 return function(self)
-    local pc = ops[self.opcode](self) or self.reg.pc
+    local pc = ops[self.opcode](self) or self.reg.pc+1
     return {
         pc = pc
     }

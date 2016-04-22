@@ -14,6 +14,10 @@ local show_debug = true
 
 function love.load()
     local options = arg_parse(arg)
+    if show_debug then
+        options.rom = options.rom or "sml.gb"
+    end
+    print(options.rom)
     if options.rom then
 
         printf("Rom: %s", options.rom)
@@ -60,7 +64,7 @@ end
 
 function love.run()
     if love.load then love.load(arg) end
- 
+
     -- Main loop time.
     while true do
         -- Process events.
@@ -75,12 +79,12 @@ function love.run()
                 love.handlers[name](a,b,c,d,e,f)
             end
         end
- 
+
         -- Update dt, as we'll be passing it to update
         if love.timer then
             love.timer.step()
         end
- 
+
         -- Call update and draw
         love.update()
         if love.graphics.isActive() then
@@ -89,7 +93,7 @@ function love.run()
             love.draw()
             love.graphics.present()
         end
- 
+
         if love.timer and not love.keyboard.isDown "tab" then love.timer.sleep(1/FPS) end
     end
 end

@@ -15,4 +15,3 @@ linux: love
 
 clean:
 	rm builds/* -i
-	
