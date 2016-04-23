@@ -20,7 +20,7 @@ end
 local function pop(self)
     self.reg.sp = self.reg.sp+1
     local tmp_lo = mem[self.reg.sp]
-    self.reg.sp = self.reg.sp-1
+    self.reg.sp = self.reg.sp+1
     local tmp_hi = mem[self.reg.sp]
     return merge_binary_numbers(tmp_hi, tmp_lo)
 end
