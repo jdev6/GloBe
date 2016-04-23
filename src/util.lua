@@ -64,3 +64,20 @@ function read_bin(fpath)
     end
     return t
 end
+
+function merge_binary_numbers(a,b)
+    local bits = select(2,math.frexp(b))
+    local result = a
+    result = bit.bor(bit.lshift(result, bits), b)
+    return result
+end
+
+function get_low_nibble(a)
+    return bit.band(a, 0x0F)
+end
+
+function get_high_nibble(a)
+    return bit.band(bit.lshift(a, 4), 0x0F)
+end
+
+

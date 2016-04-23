@@ -7,6 +7,24 @@ do
     rshift = bit.rshift
 end
 
+local function add8bit(self,add, sum_carry)
+    if sum_carry and self.reg.f.c then
+        add = add + 1 --sum carry flag
+    end
+    self.reg.f.n = false
+    self.reg.f.h = (band(self.reg.a, 0xF) + band(add, 0xF)) > 0xF
+    self.reg.f.c = self.reg.a + add > 0xFF
+    self.reg.a = self.reg.a + add
+end
+
+local function pop(self)
+    self.reg.sp = self.reg.sp+1
+    local tmp_lo = mem[self.reg.sp]
+    self.reg.sp = self.reg.sp-1
+    local tmp_hi = mem[self.reg.sp]
+    return merge_binary_numbers(tmp_hi, tmp_lo)
+end
+
 local ops = setmetatable({
     ------
     --LD--
@@ -648,7 +666,7 @@ local ops = setmetatable({
         end
 
         return band(self.reg.pc+1, 0xFFFF)
-    end,
+    end, --illuminati confirmed
 
     [0x08] = function(self)
         --LD (nn),SP
@@ -663,9 +681,8 @@ local ops = setmetatable({
     [0xF5] = function(self)
         --PUSH AF
         mem[self.reg.sp] = self.reg.a
-        --illuminati confirmed
         self.reg.sp = self.reg.sp-1
-        mem[self.reg.sp] = self.reg.f
+        mem[self.reg.sp] = self.reg.f --TODO fix f register
         self.reg.sp = self.reg.sp-1
         self:wait(16)
     end,
@@ -702,13 +719,143 @@ local ops = setmetatable({
     -------
     [0xF1] = function(self)
         --POP AF
-        self.reg.sp = self.reg.sp+1
-        local tmp_lo = mem[self.reg.sp]
-        self.reg.sp = self.reg.sp-1
-        local tmp_hi = mem[self.reg.sp]
-        self.reg.af = merge_binary_numbers(tmp_hi, tmp_lo)
+        self.reg.af = pop(self)
         self:wait(12)
-    end
+    end,
+    
+    [0xC1] = function(self)
+        --POP BC
+        self.reg.bc = pop(self)
+        self:wait(12)
+    end,
+    
+    [0xD1] = function(self)
+        --POP DE
+        self.reg.de = pop(self)
+        self:wait(12)
+    end,
+    
+    [0xE1] = function(self)
+        --POP HL
+        self.reg.hl = pop(self)
+        self:wait(12)
+    end,
+
+    -------
+    --ADD--
+    -------
+    [0x87] = function(self)
+        --ADD A,A
+        add8bit(self,self.reg.a)
+        self:wait(4)
+    end,
+    
+    [0x80] = function(self)
+        --ADD A,B
+        add8bit(self,self.reg.b)
+        self:wait(4)
+    end,
+    
+    [0x81] = function(self)
+        --ADD A,C
+        add8bit(self,self.reg.c)
+        self:wait(4)
+    end,
+    
+    [0x82] = function(self)
+        --ADD A,D
+        add8bit(self,self.reg.d)
+        self:wait(4)
+    end,
+    
+    [0x83] = function(self)
+        --ADD A,E
+        add8bit(self,self.reg.e)
+        self:wait(4)
+    end,
+    
+    [0x84] = function(self)
+        --ADD A,H
+        add8bit(self,self.reg.h)
+        self:wait(4)
+    end,
+    
+    [0x85] = function(self)
+        --ADD A,L
+        add8bit(self,self.reg.l)
+        self:wait(4)
+    end,
+    
+    [0x86] = function(self)
+        --ADD A,(HL)
+        add8bit(self,mem[self.reg.hl])
+        self:wait(8)
+    end,
+    
+    [0xC6] = function(self)
+        --ADD A,#
+        add8bit(self,mem[self.reg.pc])
+        self:wait(8)
+        return band(self.reg.pc+1, 0xFFFF)
+    end,
+    
+    -------
+    --ADC--
+    -------
+    [0x8F] = function(self)
+        --ADC A,A
+        add8bit(self,self.reg.a,true)
+        self:wait(4)
+    end,
+    
+    [0x88] = function(self)
+        --ADC A,B
+        add8bit(self,self.reg.b,true)
+        self:wait(4)
+    end,
+    
+    [0x89] = function(self)
+        --ADC A,C
+        add8bit(self,self.reg.c,true)
+        self:wait(4)
+    end,
+    
+    [0x8A] = function(self)
+        --ADC A,D
+        add8bit(self,self.reg.d,true)
+        self:wait(4)
+    end,
+    
+    [0x8B] = function(self)
+        --ADC A,E
+        add8bit(self,self.reg.e,true)
+        self:wait(4)
+    end,
+    
+    [0x8C] = function(self)
+        --ADC A,H
+        add8bit(self,self.reg.h,true)
+        self:wait(4)
+    end,
+    
+    [0x8D] = function(self)
+        --ADC A,L
+        add8bit(self,self.reg.l,true)
+        self:wait(4)
+    end,
+    
+    [0x8E] = function(self)
+        --ADC A,(HL)
+        add8bit(self,mem[self.reg.hl],true)
+        self:wait(8)
+    end,
+    
+    [0xCE] = function(self)
+        --ADC A,#
+        add8bit(self,mem[self.reg.pc],true)
+        self:wait(8)
+        return band(self.reg.pc+1, 0xFFFF)
+    end,
 },
 {__index=function() return function(self) printf("Unrecognized opcode: 0x%2X", self.opcode) end end})
 

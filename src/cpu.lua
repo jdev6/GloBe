@@ -7,21 +7,6 @@ local nintendo_banner = { --Scrolling nintendo text
     0xBB, 0xBB, 0x67, 0x63, 0x6E, 0x0E, 0xEC, 0xCC, 0xDD, 0xDC, 0x99, 0x9F, 0xBB, 0xB9, 0x33, 0x3E
 }
 
-local function merge_binary_numbers(a,b)
-    local bits = select(2,math.frexp(b))
-    local result = a
-    result = bit.bor(bit.lshift(result, bits), b)
-    return result
-end
-
-local function get_low_nibble(a)
-    return bit.band(a, 0x0F)
-end
-
-local function get_high_nibble(a)
-    return bit.band(bit.lshift(a, 4), 0x0F)
-end
-
 function cpu:new()
     return cpu {
         cycle_wait = 0,
